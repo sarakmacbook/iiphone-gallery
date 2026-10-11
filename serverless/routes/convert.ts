@@ -3,9 +3,9 @@
  * Blob, streaming progress as JSON lines. See serverless/web-convert.ts.
  */
 import { waitUntil } from "@vercel/functions";
-import { serverlessFfmpeg } from "../serverless/ffmpeg.js";
-import { corsHeaders, hasApiKey, jsonError, withEnv } from "../serverless/http.js";
-import { cleanupBlobs, convertUpload, ndjsonResponse, unavailableReason, type ConvertRequest } from "../serverless/web-convert.js";
+import { serverlessFfmpeg } from "../ffmpeg.js";
+import { corsHeaders, hasApiKey, jsonError, withEnv } from "../http.js";
+import { cleanupBlobs, convertUpload, ndjsonResponse, unavailableReason, type ConvertRequest } from "../web-convert.js";
 
 const METHODS = "POST, OPTIONS";
 let lastSweep = 0;

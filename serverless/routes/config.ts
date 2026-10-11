@@ -1,6 +1,6 @@
 /** GET /api/config — presets and limits for the website's converter (Vercel mode). */
-import { corsHeaders, hasApiKey, json, jsonError, withEnv } from "../serverless/http.js";
-import { configBody, unavailableReason } from "../serverless/web-convert.js";
+import { corsHeaders, hasApiKey, json, jsonError, withEnv } from "../http.js";
+import { configBody, unavailableReason } from "../web-convert.js";
 
 const METHODS = "GET, OPTIONS";
 

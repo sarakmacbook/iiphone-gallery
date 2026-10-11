@@ -13,18 +13,22 @@
     "start": "node --env-file-if-exists=.env dist/index.js",
     "dev:mp4": "tsx watch --env-file-if-exists=.env src/mp4-index.ts",
     "start:mp4": "node --env-file-if-exists=.env dist/mp4-index.js",
-    "test": "tsx --test src/*.test.ts",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "test": "tsx --test src/*.test.ts serverless/*.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.vercel.json",
+    "typecheck:vercel": "tsc -p tsconfig.vercel.json",
+    "vercel-build": "npm run typecheck:vercel"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
     "tsx": "^4.23.15",
-    "typescript": "5.9.3"
-  },
-  "optionalDependencies": {
-    "ffmpeg-static": "^5.3.0"
+    "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@vercel/blob": "^2.8.1",
+    "@vercel/functions": "^3.9.11",
     "grammy": "^1.46.0"
+  },
+  "optionalDependencies": {
+    "ffmpeg-static-electron-v5-linux-x64": "^5.2.5"
   }
 }

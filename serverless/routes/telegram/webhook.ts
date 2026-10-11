@@ -4,9 +4,9 @@
  * conversion) in the background with waitUntil, up to the function's maxDuration.
  */
 import { waitUntil } from "@vercel/functions";
-import { serverlessFfmpeg } from "../../serverless/ffmpeg.js";
-import { withEnv } from "../../serverless/http.js";
-import { acceptWebhook, getWebhookBot } from "../../serverless/telegram-routes.js";
+import { serverlessFfmpeg } from "../../ffmpeg.js";
+import { withEnv } from "../../http.js";
+import { acceptWebhook, getWebhookBot } from "../../telegram-routes.js";
 
 export const POST = withEnv(async (request, env) => {
   const { response, work } = await acceptWebhook(request, env, () =>

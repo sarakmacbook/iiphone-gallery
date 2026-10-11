@@ -21,9 +21,9 @@ file, the bot will not send or archive a larger copy. The 720p/480p options redu
 soften detail. Videos are never stretched or upscaled, iPhone rotation is respected, and metadata such
 as GPS location is removed from the copy.
 
-> **Prefer one Vercel project with no server to run?** The same bot, sign-in check and website converter
-> also run as Vercel Functions. See [Option A in DEPLOY.md](../DEPLOY.md#option-a-deploy-everything-to-vercel).
-> This folder is the always-on server version (no per-video time limit, `/cancel`, and the MP4 bot).
+> **Deploying on Vercel?** The website converter, Telegram sign-in, and an optional preset-based
+> Telegram webhook are available as Functions. Follow the [Vercel deployment guide](DEPLOY.md).
+> For the full polling bot, `/cancel`, channel archive, and long conversions, use an always-on host.
 
 ## 1. Create your bot
 
@@ -37,9 +37,8 @@ You need Node.js 22+ and ffmpeg (`brew install ffmpeg`, `sudo apt install ffmpeg
 `winget install ffmpeg`).
 
 ```bash
-cd bot
 cp .env.example .env        # then paste your token into TELEGRAM_BOT_TOKEN
-npm install
+npm ci
 npm run build
 npm start
 ```
@@ -47,7 +46,7 @@ npm start
 You should see:
 
 ```
-Using ffmpeg version 7.x
+Using ffmpeg version ...
 Connected to Telegram as @MyVideoBot (https://t.me/MyVideoBot)
 Web conversion API on /api: up to 200 MB, 2 at a time, results kept 60 min
 Health check on port 8080
@@ -62,8 +61,8 @@ Open the link and send it a video. For development, `npm run dev` restarts the b
 ### With Docker
 
 ```bash
-docker build -t sendable-bot bot
-docker run --env-file bot/.env -p 8080:8080 sendable-bot
+docker build -t sendable-bot .
+docker run --env-file .env -p 8080:8080 sendable-bot
 ```
 
 The image installs ffmpeg for you.
@@ -77,7 +76,7 @@ in the video's caption. It archives **only the smaller converted copy**; origina
 
 1. Create a **private** Telegram channel for the archive.
 2. Add your bot to the channel as an administrator with permission to post messages.
-3. Set `TELEGRAM_ARCHIVE_CHAT_ID` in `bot/.env` (or your host's environment variables) to the
+3. Set `TELEGRAM_ARCHIVE_CHAT_ID` in `.env` (or your host's environment variables) to the
    channel's numeric ID, usually starting with `-100`:
 
    ```bash
@@ -151,9 +150,10 @@ only — the greeting then works only for people who have pressed Start on the b
 
 ## 5. Convert from the website (HTTP API)
 
-The website's **Convert here** section is a real converter, not a mock-up: it uploads the video you
-pick from your gallery, this server converts it with ffmpeg, and the page shows the actual
-before-and-after file size with the finished MP4 to play and save.
+The always-on server's **Convert here** section is a real converter, not a mock-up: it uploads the
+video you pick from your gallery, converts it with ffmpeg, and returns the real before-and-after file
+sizes. Its multipart/job API is documented below. **Vercel uses a different, direct-to-Blob API** so
+large videos do not pass through a Function request body; see [DEPLOY.md](DEPLOY.md) for that flow.
 
 | Method and path | What it does |
 | --- | --- |
@@ -188,8 +188,8 @@ the Connect section. In development the Vite dev server proxies `/api` to `http:
 `BOT_API_PORT`), so running the bot and `npm run dev` side by side just works:
 
 ```bash
-cd bot && WEB_ONLY=true npm run dev   # terminal 1
-npm run dev                           # terminal 2, opens the site with a working converter
+WEB_ONLY=true npm run dev   # terminal 1: start the converter API
+npm run dev                 # terminal 2: start the separate website
 ```
 
 Because this is a plain HTTP upload, `WEB_MAX_UPLOAD_MB` (default 200) is not tied to Telegram's
@@ -213,7 +213,7 @@ settings as Sendable.
 
 1. In [@BotFather](https://t.me/BotFather), send `/newbot` again to create a **second** bot (for
    example `MyMp4Bot`), and copy its token.
-2. Put the token in `bot/.env`:
+2. Put the token in `.env`:
 
    ```bash
    MP4_BOT_TOKEN=987654321:BB…
@@ -222,8 +222,7 @@ settings as Sendable.
 3. Run it (it uses the same ffmpeg, Node.js and `.env` as the Sendable bot):
 
    ```bash
-   cd bot
-   npm install
+   npm ci
    npm run build
    npm run start:mp4
    ```
@@ -234,8 +233,8 @@ settings as Sendable.
 To run it in Docker, use the same image with a different command:
 
 ```bash
-docker build -t sendable-bot bot
-docker run --env-file bot/.env sendable-bot node dist/mp4-index.js
+docker build -t sendable-bot .
+docker run --env-file .env sendable-bot node dist/mp4-index.js
 ```
 
 ### Limits and behavior
@@ -265,9 +264,9 @@ polling-only and needs no public address.
 
 Either way, `GET /health` on `PORT` returns `{"ok":true,"bot":"MyVideoBot",...}` for your host's health checks, and `POST /telegram/login` on the same port verifies website sign-ins (below).
 
-The bot isn't a good fit for Vercel serverless functions. Converting a video takes longer than
-those functions are allowed to run, and the bot keeps each chat's state in memory. Deploy the website
-to Vercel and run the bot on a host that keeps a process running.
+The full polling bot is best on a host that keeps a process running: it keeps chat state in memory,
+supports `/cancel`, and has no per-video function deadline. Vercel deployment supports the website
+converter, sign-in, and a smaller stateless webhook bot; see [DEPLOY.md](DEPLOY.md).
 
 ## Settings
 
@@ -280,7 +279,7 @@ All settings are environment variables. See [`.env.example`](.env.example).
 | `ALLOW_CUSTOM` | `true` | Show the "Custom dimensions" option |
 | `MAX_DIMENSION` | `3840` | Largest custom width or height, in pixels |
 | `MAX_CONCURRENT_JOBS` | `2` | Videos converted at the same time; others wait in line |
-| `FFMPEG_PATH` | auto | ffmpeg binary (ffmpeg-static if it installed, otherwise `ffmpeg` on PATH) |
+| `FFMPEG_PATH` | auto | ffmpeg binary; Vercel bundles a Linux x64 binary, otherwise `ffmpeg` must be on PATH |
 | `TELEGRAM_API_ROOT` | `https://api.telegram.org` | Point at a self-hosted Bot API server |
 | `TELEGRAM_ARCHIVE_CHAT_ID` | (empty) | Optional channel ID; stores successfully reduced outputs as searchable archive posts |
 | `TELEGRAM_ARCHIVE_ALLOW_PUBLIC` | `false` | Explicitly allow a public archive channel (not recommended) |

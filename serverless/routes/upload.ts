@@ -4,8 +4,8 @@
  * the function's 4.5 MB request limit never applies to the video itself.
  */
 import type { HandleUploadBody } from "@vercel/blob/client";
-import { corsHeaders, hasApiKey, json, jsonError, withEnv } from "../serverless/http.js";
-import { handleUploadToken, unavailableReason } from "../serverless/web-convert.js";
+import { corsHeaders, hasApiKey, json, jsonError, withEnv } from "../http.js";
+import { handleUploadToken, unavailableReason } from "../web-convert.js";
 
 const METHODS = "POST, OPTIONS";
 

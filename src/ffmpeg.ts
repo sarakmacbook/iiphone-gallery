@@ -4,18 +4,19 @@ import { createRequire } from "node:module";
 import { crfFor, scaleFilter, type SizeChoice } from "./sizes.js";
 
 /**
- * Finds an ffmpeg binary: FFMPEG_PATH first, then the optional ffmpeg-static
- * npm package, then whatever "ffmpeg" is on the PATH.
+ * Finds an ffmpeg binary: FFMPEG_PATH first, then the bundled Linux x64
+ * Vercel binary, and finally the system ffmpeg on PATH.
  */
 export function resolveFfmpeg(configured?: string): string {
   if (configured) return configured;
-  try {
-    const require = createRequire(import.meta.url);
-    const bundled = require("ffmpeg-static") as string | null;
-    // The package can install without its binary if the download was blocked.
-    if (bundled && existsSync(bundled)) return bundled;
-  } catch {
-    // ffmpeg-static is optional; fall through to the system binary.
+  const require = createRequire(import.meta.url);
+  if (process.platform === "linux" && process.arch === "x64") {
+    try {
+      const bundled = require("ffmpeg-static-electron-v5-linux-x64") as { path?: string };
+      if (bundled.path && existsSync(bundled.path)) return bundled.path;
+    } catch {
+      // This Vercel-specific binary is only installed on Linux x64.
+    }
   }
   return "ffmpeg";
 }
