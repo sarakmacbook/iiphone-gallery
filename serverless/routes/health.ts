@@ -1,6 +1,6 @@
 /** GET /api/health (also /health) — what this deployment has switched on. */
-import { json, withEnv } from "../serverless/http.js";
-import { unavailableReason } from "../serverless/web-convert.js";
+import { json, withEnv } from "../http.js";
+import { unavailableReason } from "../web-convert.js";
 
 export const GET = withEnv((_request, env) =>
   json({

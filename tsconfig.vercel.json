@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist-vercel",
+    "noEmit": true,
+    "lib": ["ES2023", "DOM", "DOM.Iterable"]
+  },
+  "include": ["src/**/*.ts", "serverless/**/*.ts", "api/**/*.ts"],
+  "exclude": ["node_modules", "dist", "dist-vercel", "src/**/*.test.ts", "serverless/**/*.test.ts"]
+}

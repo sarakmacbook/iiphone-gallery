@@ -1,0 +1,32 @@
+{
+  "functions": {
+    "api/convert.ts": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/ffmpeg-static-electron-v5-linux-x64/**"
+    },
+    "api/telegram/webhook.ts": {
+      "maxDuration": 60,
+      "includeFiles": "node_modules/ffmpeg-static-electron-v5-linux-x64/**"
+    },
+    "api/download.ts": {
+      "maxDuration": 60
+    },
+    "api/cleanup.ts": {
+      "maxDuration": 60
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cleanup",
+      "schedule": "0 5 * * *"
+    }
+  ],
+  "rewrites": [
+    { "source": "/download", "destination": "/api/download" },
+    { "source": "/health", "destination": "/api/health" },
+    { "source": "/telegram/login", "destination": "/api/telegram/login" },
+    { "source": "/telegram/setup", "destination": "/api/telegram/setup" },
+    { "source": "/telegram/webhook", "destination": "/api/telegram/webhook" },
+    { "source": "/", "destination": "/api/health" }
+  ]
+}
